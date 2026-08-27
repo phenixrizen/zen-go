@@ -1,7 +1,7 @@
 package zen_test
 
 import (
-	"github.com/gorules/zen-go/v2"
+	"github.com/phenixrizen/zen-go/v2"
 	"github.com/stretchr/testify/require"
 	"testing"
 )

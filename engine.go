@@ -22,6 +22,19 @@ type engine struct {
 type EngineConfig struct {
 	Loader            EngineLoader
 	CustomNodeHandler CustomNodeHandler
+
+	// SqliteConfig registers the pure-Rust SQLite handler that serves databaseNode
+	// lookups. It is the handler config as JSON, e.g.
+	//
+	//	{"root":"/catalog"}
+	//	{"sources":{"codes":"/catalog/codes.db"},"allowRaw":true}
+	//
+	// Queries then run inside Rust against the files directly; unlike a custom node,
+	// nothing crosses back into Go per lookup. Leave empty to omit the handler, in
+	// which case evaluating a databaseNode reports that no handler was provided.
+	//
+	// Not supported together with a LoaderConfig -- use a Loader callback instead.
+	SqliteConfig string
 }
 
 type EngineLoader interface {
@@ -115,6 +128,10 @@ func NewEngine(config EngineConfig) Engine {
 		return engine{initError: fmt.Errorf("unsupported loader type %T", config.Loader)}
 	}
 
+	if config.SqliteConfig != "" && loaderConfig != nil {
+		return engine{initError: errors.New("SqliteConfig cannot be combined with a LoaderConfig; use a Loader callback")}
+	}
+
 	if config.CustomNodeHandler != nil {
 		newEngine.customNodeHandler = cgo.NewHandle(wrapCustomNodeHandler(config.CustomNodeHandler))
 		customNodeHandlerIdPtr = C.uintptr_t(newEngine.customNodeHandler)
@@ -152,6 +169,29 @@ func NewEngine(config EngineConfig) Engine {
 		newEngine.loaderHandler = cgo.NewHandle(wrapLoader(loaderCallback))
 		loaderHandlerIdPtr = C.uintptr_t(newEngine.loaderHandler)
 		newEngine.loaderHandlerIdPtr = &loaderHandlerIdPtr
+	}
+
+	if config.SqliteConfig != "" {
+		cSqliteConfig := C.CString(config.SqliteConfig)
+		defer C.free(unsafe.Pointer(cSqliteConfig))
+
+		resultPtr := C.zen_engine_new_golang_with_sqlite(&loaderHandlerIdPtr, &customNodeHandlerIdPtr, cSqliteConfig)
+		if resultPtr.error > 0 {
+			newEngine.disposeHandlers()
+
+			var errorDetails string
+			if resultPtr.details != nil {
+				defer C.free(unsafe.Pointer(resultPtr.details))
+				errorDetails = C.GoString(resultPtr.details)
+			} else {
+				errorDetails = fmt.Sprintf("Error code: %d", resultPtr.error)
+			}
+
+			return engine{initError: errors.New(errorDetails)}
+		}
+
+		newEngine.enginePtr = resultPtr.result
+		return newEngine
 	}
 
 	newEngine.enginePtr = C.zen_engine_new_golang(&loaderHandlerIdPtr, &customNodeHandlerIdPtr)

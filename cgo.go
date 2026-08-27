@@ -12,9 +12,9 @@ package zen
 import "C"
 
 import (
-	_ "github.com/gorules/zen-go/v2/deps/darwin_amd64"
-	_ "github.com/gorules/zen-go/v2/deps/darwin_arm64"
-	_ "github.com/gorules/zen-go/v2/deps/linux_amd64"
-	_ "github.com/gorules/zen-go/v2/deps/linux_arm64"
-	_ "github.com/gorules/zen-go/v2/deps/windows_amd64"
+	_ "github.com/phenixrizen/zen-go/v2/deps/darwin_amd64"
+	_ "github.com/phenixrizen/zen-go/v2/deps/darwin_arm64"
+	_ "github.com/phenixrizen/zen-go/v2/deps/linux_amd64"
+	_ "github.com/phenixrizen/zen-go/v2/deps/linux_arm64"
+	_ "github.com/phenixrizen/zen-go/v2/deps/windows_amd64"
 )
