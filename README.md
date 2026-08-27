@@ -1,29 +1,44 @@
+> [!NOTE]
+> ## This is a maintained fork
+>
+> **`phenixrizen/zen-go` is the Go binding for [`phenixrizen/zen`](https://github.com/phenixrizen/zen), a maintained fork of `gorules/zen`, maintained by Phenix Rizen (Nathan Rockhold).**
+>
+> The bundled static libraries are built from that fork, so this binding exposes features upstream
+> does not have:
+>
+> | addition | what it does |
+> | --- | --- |
+> | `databaseNode` | Look reference data up from inside a decision, with a host-supplied handler. |
+> | Pure-Rust SQLite handler | Register it once at startup with `NewEngineWithSqlite`; every query runs in-process with no crossing back over the FFI. **No C, no vendored amalgamation.** |
+> | Decision-level `$params` | Static parameters supplied per decision, reachable from switch, expression, and function nodes. |
+> | `TZ` is honoured | Date resolution respects `TZ` rather than only `/etc/localtime`. |
+> | Exact fractional numbers | Fixes silent truncation of every non-integer value. |
+>
+> ```
+> go get github.com/phenixrizen/zen-go/v2
+> ```
+>
+> Not affiliated with or endorsed by GoRules. MIT licensed, same as upstream, with the original
+> copyright retained in [LICENSE](LICENSE).
+
 # Go Rules Engine
 
 **Business logic humans can read and machines can run.** One copy of your rules: the owner reads it, every system runs it.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Go Reference](https://pkg.go.dev/badge/github.com/gorules/zen-go/v2.svg)](https://pkg.go.dev/github.com/gorules/zen-go/v2)
+[![Go Reference](https://pkg.go.dev/badge/github.com/phenixrizen/zen-go/v2.svg)](https://pkg.go.dev/github.com/phenixrizen/zen-go/v2)
 
-<img width="1280" alt="GoRules ZEN Engine" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/hero.png">
-
-ZEN Engine is a cross-platform, open-source [Business Rules Engine (BRE)](https://gorules.io) written in **Rust** with native **Go** bindings, alongside Node.js, Python, Java, Kotlin and .NET. Decisions evaluate in microseconds, run identically on every platform, and are stored as portable JSON. Loading the JSON is up to you: file system, database or service call.
-
-Try it in the free [Online Editor](https://editor.gorules.io) with a built-in simulator, or embed the open-source React [JDM Editor](https://github.com/gorules/jdm-editor) in your own product. Learn more about the [Go rules engine](https://gorules.io/open-source/go-rules-engine) on the GoRules website.
+ZEN Engine is a cross-platform, open-source Business Rules Engine (BRE) written in **Rust** with native **Go** bindings, alongside Node.js, Python, Java, Kotlin and .NET. Decisions evaluate in microseconds, run identically on every platform, and are stored as portable JSON. Loading the JSON is up to you: file system, database or service call.
 
 ## Rules that read like sentences
 
 Conditions are written the way the business says them, in the ZEN Expression Language. The developer view is one toggle away, and the two can never drift apart: there is only one source of truth, and this engine runs it.
 
-<img width="1280" alt="Readable rules" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/tables.png">
-
 ## Rules as graphs, or as documents
 
 Model a decision on a visual canvas of decision tables, switches, expressions, functions and reusable sub-decisions. Or write it as a policy document with prose, typed data models and tables. Both compile to the same engine and return the same answers.
 
-<img width="1280" alt="Graphs and documents" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/graphs-docs.png">
-
-To go deeper, see the [Go SDK documentation](https://docs.gorules.io/developers/sdks/go), the [decision graph guide](https://docs.gorules.io/learn/authoring/decision-graphs) and the [ZEN Expression Language](https://docs.gorules.io/learn/zen-language/syntax) reference.
+A JDM document is either a **graph** (decision tables, switches, expressions, functions and reusable sub-decisions) or a **policy** (prose, typed data models and tables). Both compile to the same engine and return the same answers.
 
 ## What's new in 2.0
 
@@ -39,7 +54,7 @@ Version 2.0 is the first stable release of the new engine line:
 ## Installation
 
 ```bash
-go get github.com/gorules/zen-go/v2
+go get github.com/phenixrizen/zen-go/v2
 ```
 
 ## Quickstart
@@ -52,7 +67,7 @@ import (
 	"os"
 	"path"
 
-	zen "github.com/gorules/zen-go/v2"
+	zen "github.com/phenixrizen/zen-go/v2"
 )
 
 func readTestFile(key string) ([]byte, error) {
@@ -92,38 +107,17 @@ engine := zen.NewEngine(zen.EngineConfig{Loader: zen.ZipLoader{Bytes: zipBytes}}
 If the loader configuration is invalid (e.g. corrupted zip bytes), the error is returned by the
 first call to `Evaluate`, `GetDecision` or `CreateDecision`.
 
-The same callback pattern works for loading from a REST API, S3, a database, or anywhere else. Full guides, including multi-decision graphs and batch evaluation, are in the [Go SDK documentation](https://docs.gorules.io/developers/sdks/go).
+The same callback pattern works for loading from a REST API, S3, a database, or anywhere else.
 
 ## Other platforms
 
-* **Node.js** - [GitHub](https://github.com/gorules/zen/tree/master/bindings/nodejs) | [Documentation](https://docs.gorules.io/developers/sdks/nodejs) | [npm](https://www.npmjs.com/package/@gorules/zen-engine)
-* **Python** - [GitHub](https://github.com/gorules/zen/tree/master/bindings/python) | [Documentation](https://docs.gorules.io/developers/sdks/python) | [PyPI](https://pypi.org/project/zen-engine/)
-* **Go** - [GitHub](https://github.com/gorules/zen-go) | [Documentation](https://docs.gorules.io/developers/sdks/go)
-* **Java / Kotlin** - [GitHub](https://github.com/gorules/zen/tree/master/bindings/uniffi) | [Documentation](https://docs.gorules.io/developers/sdks/java) | [Maven Central](https://mvnrepository.com/artifact/io.gorules/zen-engine)
-* **.NET** - [GitHub](https://github.com/gorules/zen/tree/master/bindings/uniffi) | [Documentation](https://docs.gorules.io/developers/sdks/csharp) | [NuGet](https://www.nuget.org/packages/GoRules.ZenEngine)
-* **Rust (Core)** - [GitHub](https://github.com/gorules/zen) | [Documentation](https://docs.gorules.io/developers/sdks/rust) | [crates.io](https://crates.io/crates/zen-engine)
+* **Node.js** — [npm](https://www.npmjs.com/package/@phenixrizen/zen-engine)
+* **Python** — [PyPI](https://pypi.org/project/phenixrizen-zen-engine/)
+* **Go** — this repository
+* **Java / Kotlin** — [source](https://github.com/phenixrizen/zen/tree/master/bindings/uniffi)
+* **.NET** — [NuGet](https://www.nuget.org/packages/PhenixRizen.ZenEngine)
+* **Rust (core)** — [phenixrizen/zen](https://github.com/phenixrizen/zen) | [crates.io](https://crates.io/crates/phenixrizen-zen-engine)
 
-## The GoRules platform
-
-The engine is open at the core; [GoRules](https://gorules.io) is the platform around it. Managed cloud, self-hosted, or embedded with no network hop. SOC 2 Type II.
-
-### AI that builds rules, and stays reviewable
-
-An AI copilot and MCP server that edits rules, runs tests and explains decisions. It never deploys. Releases stay with your reviewers.
-
-<img width="800" alt="GoRules AI" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/ai.png">
-
-### Promote like a release, run like a binary
-
-A release moves from testing to staging to production untouched. Approvals, instant rollback, and a paper trail for every change.
-
-<img width="800" alt="Governance" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/governance.png">
-
-### Prove it before it ships
-
-Scenario suites run on every change, coverage is measured against decision paths, and every answer comes with a replayable trace.
-
-<img width="800" alt="Testing" src="https://raw.githubusercontent.com/gorules/zen/master/.github/images/tests.png">
 
 ## Support matrix
 
@@ -139,7 +133,16 @@ We do not support linux-musl currently.
 
 ## Contribution
 
-The JDM standard is growing and we need to keep tight control over its development and roadmap, as a number of companies use GoRules ZEN Engine and GoRules BRMS. For this reason we can't accept code contributions at this moment, apart from help with documentation and additional tests.
+**Contributions are welcome here.** This fork exists partly because upstream cannot take them.
+
+Note that the Go code in this repository is a thin binding: most behaviour lives in
+[`phenixrizen/zen`](https://github.com/phenixrizen/zen), and the `deps/` static libraries are
+built from it. A change to evaluation belongs there; a change to the Go surface belongs here.
+
+```bash
+make fmt_check
+make test
+```
 
 ## License
 
