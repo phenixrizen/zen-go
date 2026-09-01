@@ -1,0 +1,33 @@
+{
+  "contentType": "application/vnd.gorules.decision",
+  "params": { "catalog": "catalog" },
+  "nodes": [
+    { "id": "input", "name": "Request", "type": "inputNode", "content": { "schema": "" } },
+    { "id": "db", "name": "lookup", "type": "databaseNode", "content": {
+        "source": { "expression": "$params.catalog" },
+        "query": { "type": "select", "table": "codes", "columns": ["code"], "limit": 1,
+                   "conditions": [ { "id": "c1", "column": "code", "operator": "eq",
+                                     "value": "procedureCode", "as": "text" } ] },
+        "result": "exists", "outputPath": "db.hit",
+        "inputField": null, "executionMode": "single", "passThrough": true } },
+    { "id": "sw", "name": "decide", "type": "switchNode", "content": {
+        "hitPolicy": "first", "statements": [
+          { "id": "y", "condition": "db.hit", "isDefault": false },
+          { "id": "n", "condition": "", "isDefault": true } ] } },
+    { "id": "yes", "name": "covered", "type": "expressionNode", "content": {
+        "expressions": [ { "id": "e1", "key": "covered", "value": "true" } ],
+        "passThrough": false, "inputField": null, "outputPath": null, "executionMode": "single" } },
+    { "id": "no", "name": "not covered", "type": "expressionNode", "content": {
+        "expressions": [ { "id": "e2", "key": "covered", "value": "false" } ],
+        "passThrough": false, "inputField": null, "outputPath": null, "executionMode": "single" } },
+    { "id": "output", "name": "Response", "type": "outputNode" }
+  ],
+  "edges": [
+    { "id": "e0", "sourceId": "input", "targetId": "db" },
+    { "id": "e1", "sourceId": "db", "targetId": "sw" },
+    { "id": "e2", "sourceId": "sw", "targetId": "yes", "sourceHandle": "y" },
+    { "id": "e3", "sourceId": "sw", "targetId": "no", "sourceHandle": "n" },
+    { "id": "e4", "sourceId": "yes", "targetId": "output" },
+    { "id": "e5", "sourceId": "no", "targetId": "output" }
+  ]
+}
