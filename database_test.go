@@ -39,6 +39,10 @@ func TestDatabaseNode_EvaluatesThroughTheSqliteHandler(t *testing.T) {
 		Loader:       zen.Loader(readTestFile),
 		SqliteConfig: string(cfg),
 	})
+	// Dispose drops the handler and its connection pool. Without it the engine leaks
+	// (the memory_test job) and, on Windows, the still-open catalog.db makes TempDir
+	// cleanup fail — the file cannot be deleted while a handle is held.
+	defer engine.Dispose()
 
 	hit := result(t, engine, "36415")
 	assert.Equal(t, true, hit["covered"], "a code in the table is covered")
@@ -64,6 +68,7 @@ func TestDatabaseNode_WithoutAHandlerIsAHardError(t *testing.T) {
 	// No SqliteConfig: the node reports "Database handler not provided" and the whole
 	// evaluation errors. A host that drafts database-backed graphs must install one.
 	engine := zen.NewEngine(zen.EngineConfig{Loader: zen.FilesystemLoader{Path: "test-data"}})
+	defer engine.Dispose()
 	_, err := engine.Evaluate("database.json",
 		map[string]any{"procedureCode": "36415"})
 	require.Error(t, err)
