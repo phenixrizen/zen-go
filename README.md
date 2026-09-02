@@ -9,7 +9,7 @@
 > | addition | what it does |
 > | --- | --- |
 > | `databaseNode` | Look reference data up from inside a decision, with a host-supplied handler. |
-> | Pure-Rust SQLite handler | Register it once at startup with `NewEngineWithSqlite`; every query runs in-process with no crossing back over the FFI. **No C, no vendored amalgamation.** |
+> | SQLite handler for `databaseNode` | Register it once at startup — `zen.NewEngine(zen.EngineConfig{Loader: zen.Loader(load), SqliteConfig: `{"root":"/catalog"}`})`, with a `Loader` *callback* (it cannot be combined with a `FilesystemLoader`) — and every query runs inside the vendored library with no crossing back over the FFI. The driver is `rusqlite` with the bundled SQLite amalgamation, so the archive does contain C; see the fork's `docs/driver-choice.md` for why. |
 > | Decision-level `$params` | Static parameters supplied per decision, reachable from switch, expression, and function nodes. |
 > | `TZ` is honoured | Date resolution respects `TZ` rather than only `/etc/localtime`. |
 > | Exact fractional numbers | Fixes silent truncation of every non-integer value. |
